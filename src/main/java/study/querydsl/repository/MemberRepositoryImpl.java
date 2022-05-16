@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
@@ -20,15 +21,38 @@ import static org.springframework.util.StringUtils.hasText;
 import static study.querydsl.entity.QMember.member;
 import static study.querydsl.entity.QTeam.team;
 
-public class MemberRepositoryImpl implements MemberRepositoryCustom{
+/**
+ * QuerydslRepositorySupport에서는 entitymanager도 제공하고 queryFactory를 사용하지 않게해준다.
+ * 페이징도 쉽게 제공해주지만, 코드가 두 조각으로 나뉘고 sort가 불가능해진다.
+ *
+ * */
+public class MemberRepositoryImpl /*extends QuerydslRepositorySupport*/ implements MemberRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     public MemberRepositoryImpl(EntityManager entityManager) {
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
+    /*public MemberRepositoryImpl() {
+        super(Member.class);
+    }*/
+
     @Override
     public List<MemberTeamDto> search(MemberSearchCondition condition) {
+        //QuerydslRepositorySupport
+        /*from()
+                .leftJoin(member.team, team)
+                .where(usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe()))
+                .select(new QMemberTeamDto(member.id.as("memberId"),
+                        member.username,
+                        member.age,
+                        team.id.as("teamId"),
+                        team.name.as("teamName")))
+                .fetch();*/
+
         return queryFactory
                 .select(new QMemberTeamDto(member.id.as("memberId"),
                         member.username,
